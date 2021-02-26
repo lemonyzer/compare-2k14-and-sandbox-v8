@@ -13,7 +13,7 @@ using System.Collections.Generic;
 
 public class CharacterCreationHelper : EditorWindow {
 
-	[MenuItem ("Window/Character Editor %#e")]
+	[MenuItem ("SMW/Character Creation Helper %#e")]
 	static void Init () {
 		GetWindow (typeof (CharacterCreationHelper));
 	}
@@ -22,42 +22,6 @@ public class CharacterCreationHelper : EditorWindow {
 	public SmwCharacterList window_SmwCharacterList;
 	private int viewIndex = 1;
 
-	// CharacterGenerics
-//	// properties for all characters
-//	public AnimationClip spawnAnimClip;
-//	public AnimationClip protectionAnimClip;
-//	public AnimationClip rageAnimClip;
-//
-//	public Sprite kingSprite;
-////	public Sprite iceWandSprite;
-//	//public AnimatorController iceWandAnimatorController;
-//	public RuntimeAnimatorController iceWandAnimatorController;
-//
-//	public Color color_rootRenderer 						= new Color(1f,1f,1f,1f);		// ALL (ROOT SpriteRenderer)
-//	public Color color_rootCloneRenderer 					= new Color(1f,1f,1f,1f);		// ALL
-//	public Color color_kingRenderer		 					= new Color(1f,1f,1f,1f);		// ALL
-//	public Color color_iceWallRenderer	 					= new Color(1f,1f,1f,1f);		// ALL
-//	public Color color_currentEstimatedPosOnServer 			= new Color(1f,1f,1f,1f);	// localplayer Character's	only
-//	public Color color_LastRecvedPos 						= new Color(1f,1f,1f,0.25f);	// all other Character's	vergangene Position
-//	public Color color_PredictedPosSimulatedWithLastInput 	= new Color(1f,1f,1f,0.25f);	// all other Character's	vergangene Position
-//	public Color color_PredictedPosCalculatedWithLastInput 	= new Color(1f,1f,1f,0.25f);	// all other Character's	vergangene Position
-//	
-//	public int rootRendererSortingLayer;
-//	public string rootRendererSortingLayerName = SortingLayer.name_CharacterBackground;
-//	public int rootCloneRendererSortingLayer;
-//	public string rootCloneRendererSortingLayerName = SortingLayer.name_CharacterBackground;
-//	public int kingRendererSortingLayer;
-//	public string kingRendererSortingLayerName = SortingLayer.name_CharacterKing;
-//	public int iceWalledRendererSortingLayer;
-//	public string iceWalledRendererSortingLayerName = SortingLayer.name_CharacterForeground;
-//	public int currentEstimatedPosOnServerSortingLayer;
-//	public string currentEstimatedPosOnServerSortingLayerName = SortingLayer.name_CharacterForeground;
-//	public int lastRecvdPosRendererSortingLayer;
-//	public string lastRecvdPosRendererSortingLayerName = SortingLayer.name_CharacterForeground;
-//	public int preSimPosRendererSortingLayer;
-//	public string preSimPosRendererSortingLayerName = SortingLayer.name_CharacterForeground;
-//	public int preCalclastRecvdPosRendererSortingLayer;
-//	public string preCalclastRecvdPosRendererSortingLayerName = SortingLayer.name_CharacterForeground;
 	// Get the sorting layer names
 	//int popupMenuIndex;//The selected GUI popup Index
 	public string[] GetSortingLayerNames()
@@ -189,8 +153,6 @@ public class CharacterCreationHelper : EditorWindow {
 		return false;
 	}
 
-	
-
 	void OnFocus()
 	{
 		// wenn fester wieder aktiv wird //TODO sortingLayer neu einlesen und alles andere auch am besten
@@ -273,11 +235,28 @@ public class CharacterCreationHelper : EditorWindow {
 		EditorPrefs.SetBool(key, value);
 	}
 
-	void CreateNewCharacterList()
+    void CheckCharacterList()
+    {
+        if (window_SmwCharacterList.charactersList != null)
+            Debug.Log(window_SmwCharacterList.ToString() + "charactersList exists");
+        else
+            Debug.LogError(window_SmwCharacterList.ToString() + "charactersList doesnt exists");
+
+        if (window_SmwCharacterList.CharacterSOList != null)
+            Debug.Log(window_SmwCharacterList.ToString() + "CharacterSOList exists");
+        else
+            Debug.LogError(window_SmwCharacterList.ToString() + "CharacterSOList doesnt exists");
+    }
+
+    void CreateNewCharacterList()
 	{
 		viewIndex = 1;
 		window_SmwCharacterList = CreateSmwCharacterList.Create();
-		if(window_SmwCharacterList)
+
+        //Debug
+        //CheckCharacterList();
+
+        if (window_SmwCharacterList)
 		{
 			string relPath = AssetDatabase.GetAssetPath(window_SmwCharacterList);
 			EditorPrefs.SetString(SMWCharacterListPath, relPath);
@@ -452,14 +431,36 @@ public class CharacterCreationHelper : EditorWindow {
 			GUI.enabled = true;
 		else
 			GUI.enabled = false;
-		if (GUILayout.Button("Create New Character List", GUILayout.ExpandWidth(false)))
-		{
-			CreateNewCharacterList();
-		}
-		GUILayout.EndHorizontal ();
-		
-		
-		GUILayout.BeginHorizontal ();
+        if (GUILayout.Button("Create New Character List", GUILayout.ExpandWidth(false)))
+        {
+            CreateNewCharacterList();
+        }
+        GUILayout.EndHorizontal ();
+
+        GUILayout.BeginHorizontal ();
+        if (window_SmwCharacterList != null)
+            GUI.enabled = true;
+        else
+            GUI.enabled = false;
+        if (GUILayout.Button("check Character List", GUILayout.ExpandWidth(false)))
+        {
+            CheckCharacterList();
+        }
+        if (GUILayout.Button("set Character List dirty", GUILayout.ExpandWidth(false)))
+        {
+            EditorUtility.SetDirty (window_SmwCharacterList);
+        }
+        if (GUILayout.Button("save assets", GUILayout.ExpandWidth(false)))
+        {
+            AssetDatabase.SaveAssets();
+        }
+        if (GUILayout.Button("reload assets", GUILayout.ExpandWidth(false)))
+        {
+            window_SmwCharacterList = AssetDatabase.LoadAssetAtPath(AssetDatabase.GetAssetPath(window_SmwCharacterList), typeof(SmwCharacterList)) as SmwCharacterList;
+        }
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal ();
 		GUI.enabled = true;
 		window_SmwCharacterList = EditorGUILayout.ObjectField(window_SmwCharacterList, typeof(SmwCharacterList), false, GUILayout.ExpandWidth(false)) as SmwCharacterList;
 		GUILayout.EndHorizontal ();
@@ -520,113 +521,166 @@ public class CharacterCreationHelper : EditorWindow {
 		window_SmwCharacter = EditorGUILayout.ObjectField("SMW Character SO", window_SmwCharacter, typeof(SmwCharacter), false) as SmwCharacter;
 	}
 
-//	string EP_AutoImportPath = "AutoImportPathString";
-//	string autoImportPath = "";
+    //	string EP_AutoImportPath = "AutoImportPathString";
+    //	string autoImportPath = "";
 
-//	string OpenAutoImportFolderDialog(string relStartPath)
-//	{
-//		string absStartPath = Application.dataPath + relStartPath.Substring("Assets".Length);
-//		//Debug.Log(absStartPath);
-//		
-//		string absPath = EditorUtility.OpenFolderPanel ("Select Folder with Sprites", absStartPath, "");
-//		if (absPath.StartsWith(Application.dataPath))
-//		{
-//			string relPath = absPath.Substring(Application.dataPath.Length - "Assets".Length);
-//			if (!string.IsNullOrEmpty(relPath))
-//			{
-//				EditorPrefs.SetString(EP_AutoImportPath, relPath);
-//			}
-//			return relPath;
-//		}
-//		return null;
-//	}
+    //	string OpenAutoImportFolderDialog(string relStartPath)
+    //	{
+    //		string absStartPath = Application.dataPath + relStartPath.Substring("Assets".Length);
+    //		//Debug.Log(absStartPath);
+    //		
+    //		string absPath = EditorUtility.OpenFolderPanel ("Select Folder with Sprites", absStartPath, "");
+    //		if (absPath.StartsWith(Application.dataPath))
+    //		{
+    //			string relPath = absPath.Substring(Application.dataPath.Length - "Assets".Length);
+    //			if (!string.IsNullOrEmpty(relPath))
+    //			{
+    //				EditorPrefs.SetString(EP_AutoImportPath, relPath);
+    //			}
+    //			return relPath;
+    //		}
+    //		return null;
+    //	}
 
-//	string OpenAutoImportFolderDialog_Resources(string relStartPath)
-//	{
-//		string absStartPath = Application.dataPath + relStartPath.Substring("Assets".Length);
-//		//Debug.Log(absStartPath);
-//		
-//		string absPath = EditorUtility.OpenFolderPanel ("Select Folder with Sprites", absStartPath, "");
-//		if (absPath.StartsWith(Application.dataPath))
-//		{
-//			string relPath = absPath.Substring(Application.dataPath.Length - "Assets".Length);
-//			if (!string.IsNullOrEmpty(relPath))
-//			{
-//				EditorPrefs.SetString(EP_AutoImportPath, relPath);
-//			}
-//
-//			//char[] divid = new char[10] ;
-//			//divid = (char[]) "/Resources";
-//			char[] divid = new char[] { '/','R','e','s','o','u','r','c','e','s' } ;
-//			string[] splitt = relPath.Split(divid);
-//			string resPath = splitt[splitt.Length - 1];
-//			Debug.Log(resPath + " splitt.Length=" + splitt.Length);
-//
-//			return resPath;
-//		}
-//		return null;
-//	}
+    //	string OpenAutoImportFolderDialog_Resources(string relStartPath)
+    //	{
+    //		string absStartPath = Application.dataPath + relStartPath.Substring("Assets".Length);
+    //		//Debug.Log(absStartPath);
+    //		
+    //		string absPath = EditorUtility.OpenFolderPanel ("Select Folder with Sprites", absStartPath, "");
+    //		if (absPath.StartsWith(Application.dataPath))
+    //		{
+    //			string relPath = absPath.Substring(Application.dataPath.Length - "Assets".Length);
+    //			if (!string.IsNullOrEmpty(relPath))
+    //			{
+    //				EditorPrefs.SetString(EP_AutoImportPath, relPath);
+    //			}
+    //
+    //			//char[] divid = new char[10] ;
+    //			//divid = (char[]) "/Resources";
+    //			char[] divid = new char[] { '/','R','e','s','o','u','r','c','e','s' } ;
+    //			string[] splitt = relPath.Split(divid);
+    //			string resPath = splitt[splitt.Length - 1];
+    //			Debug.Log(resPath + " splitt.Length=" + splitt.Length);
+    //
+    //			return resPath;
+    //		}
+    //		return null;
+    //	}
 
-//	UnityEngine.Object[] importObjects;
-//	void OnGUI_AutoImport()
-//	{
-//		GUILayout.Label ("Auto Import", EditorStyles.boldLabel);
-//		GUILayout.BeginHorizontal ();
-//		GUILayout.Label ("Path = " + autoImportPath, GUILayout.ExpandWidth(false));
-//		if (GUILayout.Button("Select Import Folder", GUILayout.ExpandWidth(false)))
-//		{
-//			// open folder dialog
-//			//autoImportPath = Application.dataPath + "/" + OpenAutoImportFolderDialog (autoImportPath);// + "/";		// AssetsDatabase kann nur auf Assets/.. zugreifen
-//			autoImportPath = OpenAutoImportFolderDialog (autoImportPath);// + "/";
-//			if (!string.IsNullOrEmpty(autoImportPath))
-//			{
-//				//importObjects = AssetDatabase.LoadAllAssetsAtPath(autoImportPath);
-//				importObjects = Resources.LoadAll(autoImportPath);
-//				if(importObjects != null)
-//				{
-//					Debug.Log("Found " + importObjects.Length + " importObjects @ relPath " + autoImportPath);
-//				}
-//			}
-//		}
-//
-//		if(importObjects != null)
-//		{
-//			GUILayout.Label ( "Found " + importObjects.Length + " importObjects @ relPath " + autoImportPath, GUILayout.ExpandWidth(false));
-//			foreach(UnityEngine.Object obj in importObjects)
-//			{
-//				GUILayout.Label (obj.name , GUILayout.ExpandWidth(false));
-//			}
-//		}
-//		else
-//		{
-//			GUILayout.Label ("importedObjects == NULL! @ relPath " + autoImportPath, GUILayout.ExpandWidth(false));
-//		}
-//		
-//		GUILayout.EndHorizontal ();
-//	}
+    //	UnityEngine.Object[] importObjects;
+    //	void OnGUI_AutoImport()
+    //	{
+    //		GUILayout.Label ("Auto Import", EditorStyles.boldLabel);
+    //		GUILayout.BeginHorizontal ();
+    //		GUILayout.Label ("Path = " + autoImportPath, GUILayout.ExpandWidth(false));
+    //		if (GUILayout.Button("Select Import Folder", GUILayout.ExpandWidth(false)))
+    //		{
+    //			// open folder dialog
+    //			//autoImportPath = Application.dataPath + "/" + OpenAutoImportFolderDialog (autoImportPath);// + "/";		// AssetsDatabase kann nur auf Assets/.. zugreifen
+    //			autoImportPath = OpenAutoImportFolderDialog (autoImportPath);// + "/";
+    //			if (!string.IsNullOrEmpty(autoImportPath))
+    //			{
+    //				//importObjects = AssetDatabase.LoadAllAssetsAtPath(autoImportPath);
+    //				importObjects = Resources.LoadAll(autoImportPath);
+    //				if(importObjects != null)
+    //				{
+    //					Debug.Log("Found " + importObjects.Length + " importObjects @ relPath " + autoImportPath);
+    //				}
+    //			}
+    //		}
+    //
+    //		if(importObjects != null)
+    //		{
+    //			GUILayout.Label ( "Found " + importObjects.Length + " importObjects @ relPath " + autoImportPath, GUILayout.ExpandWidth(false));
+    //			foreach(UnityEngine.Object obj in importObjects)
+    //			{
+    //				GUILayout.Label (obj.name , GUILayout.ExpandWidth(false));
+    //			}
+    //		}
+    //		else
+    //		{
+    //			GUILayout.Label ("importedObjects == NULL! @ relPath " + autoImportPath, GUILayout.ExpandWidth(false));
+    //		}
+    //		
+    //		GUILayout.EndHorizontal ();
+    //	}
 
-	public string GetCharNameFromFileName(string fileName)
-	{
-		string[] splitted = SplittFileName(fileName);
 
-		if(splitted == null)
-		{
-			Debug.LogError(fileName + " SpittFileName == null");
-		}
-		if(splitted.Length == 3)
-		{
-			if (!string.IsNullOrEmpty(splitted[0]))
-				return splitted[0];
-		}
-		else if(splitted.Length == 4)
-		{
-			if (!string.IsNullOrEmpty(splitted[1]))
-				return splitted[1];
-		}
+    public enum FilenameFilter
+    {
+        CharacterName = 3,
+        CharacterTeam = 1
+    }
 
-		Debug.LogError(fileName + " konnte Character namen nicht extrahieren");
-		return null;
-	}
+    public string GetInfoFromFileName(string fileName, FilenameFilter filter)
+    {
+        // old convention
+        // BlackMage_alpha_rmFF00FF.png
+        // charactername_alpha_rmFF00FF.png
+        // hazey_Trainer_alpha_rmFF00FF
+        // artist_charactername_alpha_rmFF00FF.png
+
+        // new convention
+        // BlackMage_ARGB32_red
+        // %charactername%_ARGB32_%team%
+        // hazey_Trainer_ARGB32_red
+        // artist_%charactername%_ARGB32_%team%
+
+        string[] splitted = SplittFileName(fileName);
+
+        if (splitted == null)
+        {
+            Debug.LogError(fileName + " SpittFileName == null");
+        }
+        if (splitted.Length == 3 ||
+            splitted.Length == 4)
+        {
+            string info = splitted[splitted.Length - (int)filter];
+            if (!string.IsNullOrEmpty(info))
+            {
+                if (filter == FilenameFilter.CharacterTeam)
+                {
+                    // remove fileextension (.png)
+                    try
+                    {
+                        info = info.Substring(0,info.Length -4);
+                    }
+                    catch (Exception)
+                    {
+                        return null;
+                    }
+                }
+                return info;
+            }
+        }
+
+        Debug.LogError(fileName + " konnte Character namen nicht extrahieren");
+        return null;
+    }
+
+ //   public string GetCharNameFromFileName(string fileName)
+	//{
+	//	string[] splitted = SplittFileName(fileName);
+
+	//	if(splitted == null)
+	//	{
+	//		Debug.LogError(fileName + " SpittFileName == null");
+	//	}
+	//	if(splitted.Length == 3)
+	//	{
+	//		if (!string.IsNullOrEmpty(splitted[0]))
+	//			return splitted[0];
+	//	}
+	//	else if(splitted.Length == 4)
+	//	{
+	//		if (!string.IsNullOrEmpty(splitted[1]))
+	//			return splitted[1];
+	//	}
+
+	//	Debug.LogError(fileName + " konnte Character namen nicht extrahieren");
+	//	return null;
+	//}
 
 	public string[] SplittFileName(string fileName)
 	{
@@ -637,10 +691,12 @@ public class CharacterCreationHelper : EditorWindow {
 		return result;
 	}
 
-	void StartBatchImport(SmwCharacterList charList, SmwCharacterGenerics characterGenerics, bool clearListBeforeImport, string importPath)
+	void StartBatchImport(SmwCharacterList charList, SmwCharacterGenerics characterGenerics, bool clearListBeforeImport, string importPath, int amountLimit)
 	{
+        bool fSlice = false;
+        string charSoPath = "Assets/TeamTest";
 
-		if(string.IsNullOrEmpty(importPath))
+        if (string.IsNullOrEmpty(importPath))
 		{
 			Debug.LogError ("importPath == \"\" oder null !!!");
 			return;
@@ -673,8 +729,15 @@ public class CharacterCreationHelper : EditorWindow {
 
 		if(info != null)
 		{
+            int iCount = 0;
 			foreach (FileInfo f in info)
 			{
+                iCount++;
+                if(iCount > amountLimit &&
+                    amountLimit != 0)
+                {
+                    break;
+                }
 				//				Debug.Log("Found " + f.Name);
 				//				Debug.Log("f.DirectoryName=" + f.DirectoryName);
 				//				Debug.Log("f.FullName=" + f.FullName);
@@ -685,29 +748,67 @@ public class CharacterCreationHelper : EditorWindow {
 				string currentSpritePath = f.FullName.Substring(Application.dataPath.Length - "Assets".Length);
 				GUILayout.Label ("Found " + currentSpritePath, GUILayout.ExpandWidth(false));
 
-
-				TextureImporter spriteImporter = null;
-				spriteImporter = TextureImporter.GetAtPath (currentSpritePath) as TextureImporter ;
-				if(spriteImporter == null)
-				{
-					Debug.LogError( currentSpritePath + " TextureImporter == null ");
-					continue;		// skip this character
-				}
-				else
-				{
-					// PerformMetaSlice
-					PerformMetaSlice(spriteImporter);
-				}
+                if (fSlice)
+                {
+				    TextureImporter spriteImporter = null;
+				    spriteImporter = TextureImporter.GetAtPath (currentSpritePath) as TextureImporter ;
+				    if(spriteImporter == null)
+				    {
+					    Debug.LogError( currentSpritePath + " TextureImporter == null ");
+					    continue;		// skip this character
+				    }
+				    else
+				    {
+					    // PerformMetaSlice
+					    PerformMetaSlice(spriteImporter);
+				    }
+                }
 
 
 				//TODO character name extrahieren (string.splitt by _)
-				string charName = GetCharNameFromFileName(f.Name);
+				//string charName = GetCharNameFromFileName(f.Name);
+                string charName = GetInfoFromFileName(f.Name, FilenameFilter.CharacterName);
 
-				if(string.IsNullOrEmpty(charName))
+                if (string.IsNullOrEmpty(charName))
 					charName = f.Name;
 
-				// Character ScriptableObject erstellen	(Ordner und name)
-				SmwCharacter currentCharacter = CreateSmwCharacter.CreateAssetWithPathAndName("Assets/Test", charName);		//TODO ordner erstellen falls nicht vorhanden
+                string team = GetInfoFromFileName(f.Name, FilenameFilter.CharacterTeam);
+                if (team == null)
+                {
+                    Debug.LogError(f.Name + " Team " + team + " not valid to parse!");
+                    continue;		// skip this character
+                }
+                bool teamParseError = false;
+                Teams teamId;
+                try
+                {
+                    teamId = (Teams) Enum.Parse(typeof(Teams), team, true);
+
+                }
+                catch (Exception e)
+                {
+                    teamParseError = true;
+                    teamId = Teams.count;   // <-- set invalid team
+                    Debug.LogError(e);
+                }
+
+                if (!ValidTeam(teamId) || teamParseError)
+                {
+                    Debug.LogError(f.Name + " Team " + teamId + " not valid!");
+                    continue;		// skip this character
+                }
+
+                // check if SmwCharacter SO already exists
+                SmwCharacter currentCharacter = charList.Get(charName);
+                if (currentCharacter != null)
+                {
+
+                }
+                else
+                {
+				    // Character ScriptableObject erstellen	(Ordner und name)
+				    currentCharacter = CreateSmwCharacter.CreateAssetWithPathAndName(charSoPath, charName);		//TODO ordner erstellen falls nicht vorhanden
+                }
 
 				//überprüfe ob scriptableObject hinzugefügt wurde
 				if(currentCharacter == null)
@@ -716,10 +817,10 @@ public class CharacterCreationHelper : EditorWindow {
 					continue;		// skip this character
 				}
 
-				AddSpritesheetToSmwCharacterSO(currentCharacter, currentSpritePath);
+				AddSpritesheetToSmwCharacterSO(currentCharacter, teamId, currentSpritePath);
 
 				//überprüfe ob spritesheet hinzugefügt wurde //TODO inhalt ebenfalls prüfen!
-				if(currentCharacter.charSpritesheet == null)
+				if(currentCharacter.GetSprites(teamId, SmwCharacterAnimation.Spritesheet) == null)
 				{
 					Debug.LogError(f.Name + " currentCharacter.charSpritesheet == null");
 					continue;		// skip this character
@@ -727,16 +828,16 @@ public class CharacterCreationHelper : EditorWindow {
 
 
 				//runtimeAnimatorController erstellen
-				RuntimeAnimatorController animController = CharacterAnimator.Create(window_SmwCharacterGenerics, currentCharacter);
+				RuntimeAnimatorController animController = CharacterAnimator.Create(window_SmwCharacterGenerics, currentCharacter, teamId);
 
 				//überprüfe ob runtimeAnimatorController hinzugefügt wurde
-				if(currentCharacter.runtimeAnimatorController == null)					//TODO in welchem pfad wird das asset runtimeAnimatorController gespeichert???
+				if(currentCharacter.GetRuntimeAnimationController(teamId) == null)					//TODO in welchem pfad wird das asset runtimeAnimatorController gespeichert???
 				{
 					Debug.LogError(f.Name + " currentCharacter.runtimeAnimatorController == null");
 
-					currentCharacter.runtimeAnimatorController = animController;
+					currentCharacter.SetRuntimeAnimationController (teamId, animController);
 					Debug.LogError(f.Name + " currentCharacter.runtimeAnimatorController Manuel hinzugefügt");
-					if(currentCharacter.runtimeAnimatorController == null)
+					if(currentCharacter.GetRuntimeAnimationController(teamId) == null)
 					{
 						continue;		// skip this character
 					}
@@ -747,10 +848,10 @@ public class CharacterCreationHelper : EditorWindow {
 				}
 
 				//prefab erstellen
-				GameObject currentPrefab = CreateCharacterPrefab(currentCharacter, characterGenerics, batch_KeepBatchCreatedPrefabsInScene);
+				GameObject currentPrefab = CreateCharacterPrefab(currentCharacter, teamId, characterGenerics, batch_KeepBatchCreatedPrefabsInScene);
 
 				//prefab in ScriptableObject referenzieren
-				currentCharacter.SetUnityNetworkPrefab(currentPrefab);
+				currentCharacter.SetUnityNetworkPrefab(teamId, currentPrefab);
 
 				//fertigen SmwCharacter änderungen speichern
 				currentCharacter.Save();
@@ -765,7 +866,18 @@ public class CharacterCreationHelper : EditorWindow {
 			charList.SetCharacterIDs();		// set characterIds
 		}
 	}
-	bool window_KeepCreatedPrefabsInScene = true;
+
+    private bool ValidTeam(Teams teamId)
+    {
+        if ((int)teamId >= 0 &&
+            teamId < Teams.count)
+        {
+            return true;
+        }
+        return false;
+    }
+
+    bool window_KeepCreatedPrefabsInScene = true;
 
 	string batch_LastWorkingImportPath = "";
 	string batch_ImportPath = "";
@@ -799,7 +911,8 @@ public class CharacterCreationHelper : EditorWindow {
 				string currentSpritePath = f.FullName.Substring(Application.dataPath.Length - "Assets".Length);
 				Debug.Log("currentSpritePath=" + currentSpritePath);
 
-				string charName = GetCharNameFromFileName(f.Name);
+				//string charName = GetCharNameFromFileName(f.Name);
+				string charName = GetInfoFromFileName(f.Name, FilenameFilter.CharacterName);
 				if(charName != null)
 				{
 					Debug.Log(charName);
@@ -832,8 +945,10 @@ public class CharacterCreationHelper : EditorWindow {
 	}
 
 	string window_batch_fileCount = "";
+    int wAmountLimit = 0;
 
-	void OnGUI_AutoImport()
+
+    void OnGUI_AutoImport()
 	{
 		GUILayout.Label ("Auto Import", EditorStyles.boldLabel);
 		GUILayout.Label ("Path = " + batch_ImportPath, GUILayout.ExpandWidth(false));
@@ -890,8 +1005,7 @@ public class CharacterCreationHelper : EditorWindow {
 		if (window_SmwCharacterGenerics != null)
 		{
 			GUI.enabled = true;
-			// TODO// TODO// TODO// TODO// TODO// TODO// TODO// TODO// TODO// TODO// TODO// TODO			window_SmwCharacterGenerics muss komplett eingestellt sein
-			if(true)//window_SmwCharacterGenerics.allPropertysSet)
+			if(window_SmwCharacterGenerics.AllPropertysSet())
 			{
 				GUI.enabled = true;
 			}
@@ -918,9 +1032,14 @@ public class CharacterCreationHelper : EditorWindow {
 		{
 			GUI.enabled = false;
 		}
+        wAmountLimit = EditorGUILayout.IntField(wAmountLimit);
+        if (wAmountLimit < 0)
+        {
+            wAmountLimit = 0;
+        }
 		if (GUILayout.Button("Start Import " + window_batch_fileCount, GUILayout.ExpandWidth(false)))
 		{
-			StartBatchImport(window_SmwCharacterList, window_SmwCharacterGenerics, clearAndBatchImport, batch_ImportPath);		// TODO absOrdnerPfad angeben und erneut einlesen im BacthImport!!!!!
+			StartBatchImport(window_SmwCharacterList, window_SmwCharacterGenerics, clearAndBatchImport, batch_ImportPath, wAmountLimit);		// TODO absOrdnerPfad angeben und erneut einlesen im BacthImport!!!!!
 		}
 
 		if (window_Batch_FileInfo != null && window_Batch_FileInfo.Length > 0)
@@ -965,9 +1084,13 @@ public class CharacterCreationHelper : EditorWindow {
 		myFoldoutStyle.onActive.textColor = myStyleColor;
 	}
 
-	void OnGUI ()
+    Teams selectedTeam;
+
+    void OnGUI ()
 	{
-		InitFoldStyle ();	// TODO put in OnEnable
+        sliderPosition = EditorGUILayout.BeginScrollView(sliderPosition);
+
+        InitFoldStyle();	// TODO put in OnEnable
 
 //		showGeneralSettings = EditorGUILayout.Foldout(showGeneralSettings, "General Settings", myFoldoutStyle);
 //		if (!showGeneralSettings)
@@ -1070,27 +1193,31 @@ public class CharacterCreationHelper : EditorWindow {
 			GUI.enabled = false;
 			GUILayout.Label("Sprite muss vorbereitet werden!");
 		}
-		if (GUILayout.Button("Add Spritesheet to Character"))
+        selectedTeam = (Teams) EditorGUILayout.EnumPopup("Team:", selectedTeam);
+        if (selectedTeam == Teams.count)
+            selectedTeam = Teams.yellow;
+
+        if (GUILayout.Button("Add Spritesheet to Character"))
 		{
-			AddSpritesheetToSmwCharacterSO(window_SmwCharacter, myImporter.assetPath);
+			AddSpritesheetToSmwCharacterSO(window_SmwCharacter, selectedTeam, myImporter.assetPath);
 		}
 
 
 
 
-		if(allowedToCreateAnimatorController())
+		if(allowedToCreateAnimatorController(selectedTeam))
 			GUI.enabled = true;
 		else
 			GUI.enabled = false;
 		if (GUILayout.Button("create RuntimeAnimatorController"))
 		{
 			// create Prefab
-			CharacterAnimator.Create(window_SmwCharacterGenerics, window_SmwCharacter);
+			CharacterAnimator.Create(window_SmwCharacterGenerics, window_SmwCharacter, selectedTeam);
 		}
 		networked = EditorGUILayout.Toggle("for Network", networked);
 
 
-		if(allowedToCreateCharacterPrefab())
+		if(allowedToCreateCharacterPrefab(selectedTeam))
 			GUI.enabled = true;
 		else
 			GUI.enabled = false;
@@ -1099,11 +1226,13 @@ public class CharacterCreationHelper : EditorWindow {
 		if (GUILayout.Button("create Prefab"))
 		{
 			// create Prefab
-			CreateCharacterPrefab(window_SmwCharacter, window_SmwCharacterGenerics, window_KeepCreatedPrefabsInScene);
+			CreateCharacterPrefab(window_SmwCharacter, selectedTeam, window_SmwCharacterGenerics, window_KeepCreatedPrefabsInScene);
         }
+
+        EditorGUILayout.EndScrollView();
     }
 
-	bool allowedToMetaSliceSprite()
+	bool allowedToMetaSliceSprite(Teams teamId)
 	{
 		//window_SmwCharacter != null
 		//window_SmwCharacterGenerics != null
@@ -1115,14 +1244,14 @@ public class CharacterCreationHelper : EditorWindow {
 		   window_SmwCharacterGenerics.rageAnimClip != null &&
 		   window_SmwCharacterGenerics.spawnAnimClip != null &&
 		   window_SmwCharacter != null &&
-		   window_SmwCharacter.charSpritesheet.Length == 6)
+		   window_SmwCharacter.GetSprites(teamId,SmwCharacterAnimation.Spritesheet).Length == 6)
 			return true;
 		else
 			return false;
 	}
 
 
-	bool allowedToCreateAnimatorController()
+	bool allowedToCreateAnimatorController(Teams teamId)
 	{
 		//window_SmwCharacter != null
 		//window_SmwCharacterGenerics != null
@@ -1134,13 +1263,14 @@ public class CharacterCreationHelper : EditorWindow {
 		   window_SmwCharacterGenerics.rageAnimClip != null &&
 		   window_SmwCharacterGenerics.spawnAnimClip != null &&
 		   window_SmwCharacter != null &&
-		   window_SmwCharacter.charSpritesheet.Length == 6)
+		   window_SmwCharacter.GetSprites(teamId,SmwCharacterAnimation.Spritesheet) != null &&
+		   window_SmwCharacter.GetSprites(teamId,SmwCharacterAnimation.Spritesheet).Length == 6)
 			return true;
 		else
 			return false;
 	}
 
-	bool allowedToCreateCharacterPrefab()
+	bool allowedToCreateCharacterPrefab(Teams teamId)
 	{
 		//window_SmwCharacter != null
 		//window_SmwCharacterGenerics != null
@@ -1150,14 +1280,14 @@ public class CharacterCreationHelper : EditorWindow {
 
 		if(window_SmwCharacterGenerics != null && 
 		   window_SmwCharacter != null &&
-		   window_SmwCharacter.runtimeAnimatorController != null)
+		   window_SmwCharacter.GetRuntimeAnimationController(teamId) != null)
 			return true;
 		else
 			return false;
 	}
 
 
-	private bool AddSpritesheetToSmwCharacterSO(SmwCharacter currentCharacter, string relSpritePath)
+	private bool AddSpritesheetToSmwCharacterSO(SmwCharacter currentCharacter, Teams teamId, string relSpritePath)
 	{
 //		Debug.Log("Loading Sprites @ " + relSpritePath);
 		//					slicedSprite = AssetDatabase.LoadAllAssetRepresentationsAtPath (myImporter.assetPath) as Sprite[];
@@ -1187,7 +1317,7 @@ public class CharacterCreationHelper : EditorWindow {
 		if(slicedSprites != null)
 		{
 			Debug.Log("slicedSprites SubAssets Anzahl = " + slicedSprites.Length);
-			currentCharacter.SetCharSpritesheet(slicedSprites);								// add to SmwCharacter
+			currentCharacter.SetCharSpritesheet(teamId, slicedSprites);								// add to SmwCharacter
 			EditorUtility.SetDirty(currentCharacter);										// save ScriptableObject
 			return true;
 		}
@@ -1327,7 +1457,7 @@ public class CharacterCreationHelper : EditorWindow {
 
 	bool networked = false;
 
-	GameObject CreateCharacterPrefab(SmwCharacter characterSO, SmwCharacterGenerics generics, bool keepTempCreatedGoInScene)
+	GameObject CreateCharacterPrefab(SmwCharacter characterSO, Teams teamId, SmwCharacterGenerics generics, bool keepTempCreatedGoInScene)
 	{
 		string charName = characterSO.charName;
 		if(characterSO.charName == "")
@@ -1345,14 +1475,15 @@ public class CharacterCreationHelper : EditorWindow {
 		else
 			pathRelativeToAssetsPath = "Prefabs/AutoGen Characters";
 
-		if (!CharacterAnimator.CreateFolder (pathRelativeToAssetsPath))
+		string createdAssetPath = "";
+		if (!UnityEnhancements.AssetTools.TryCreateFolderWithAssetDatabase (pathRelativeToAssetsPath, out createdAssetPath))
 		{
 			Debug.LogError("Ordner " + pathRelativeToAssetsPath + " konnte nicht erstellt werden");
 			return null;
 		}
 
 //		string pathRelativeToProject = "Assets/" + pathRelativeToAssetsPath;
-		string prefabPathRelativeToProject = "Assets/" + pathRelativeToAssetsPath + "/" + charName + ".prefab";
+		string prefabPathRelativeToProject = createdAssetPath + "/" + charName + "_" + teamId + ".prefab";
 
 		UnityEngine.Object emptyObj = PrefabUtility.CreateEmptyPrefab (prefabPathRelativeToProject);
         
@@ -1363,7 +1494,7 @@ public class CharacterCreationHelper : EditorWindow {
 //		GameObject tempObj = new GameObject(charName);
 
 		// build character
-		GameObject createdCharacterGO = SmartCreate(characterSO, generics);
+		GameObject createdCharacterGO = SmartCreate(characterSO, teamId, generics);
 
 		if( createdCharacterGO != null)
 		{
@@ -1382,20 +1513,20 @@ public class CharacterCreationHelper : EditorWindow {
 			Debug.LogError("created CharacterGO ist NULL!!!");
 			return null;
 		}
-
-		return null;
+        
 	}
 
 	ChildData root;
 	List<ChildData> childs;
+    private Vector2 sliderPosition;
 
-	/// <summary>
-	/// Smarts the create. Create special Body Parts MultipleTimes
-	/// </summary>
-	/// <returns>The create.</returns>
-	/// <param name="characterSO">Character S.</param>
-	/// <param name="charGenerics">Char generics.</param>
-	public GameObject SmartCreate(SmwCharacter characterSO, SmwCharacterGenerics charGenerics)
+    /// <summary>
+    /// Smarts the create. Create special Body Parts MultipleTimes
+    /// </summary>
+    /// <returns>The create.</returns>
+    /// <param name="characterSO">Character S.</param>
+    /// <param name="charGenerics">Char generics.</param>
+    public GameObject SmartCreate(SmwCharacter characterSO, Teams teamId, SmwCharacterGenerics charGenerics)
 	{
 //		Debug.Log(this.ToString() + " Create smwCharacter Name= " + characterSO.name);
 		
@@ -1406,7 +1537,7 @@ public class CharacterCreationHelper : EditorWindow {
 		childs = new List<ChildData> ();
 
 		// fülle root und Child Liste
-		fillRootAndChildData(characterSO, charGenerics);
+		fillRootAndChildData(characterSO, teamId, charGenerics);
 
 		// lese Child Liste aus und erzeuge childGO's
 		foreach(ChildData child in childs)
@@ -1422,7 +1553,7 @@ public class CharacterCreationHelper : EditorWindow {
 
 
 
-	public void fillRootAndChildData(SmwCharacter characterSO, SmwCharacterGenerics charGenerics)
+	public void fillRootAndChildData(SmwCharacter characterSO, Teams teamId, SmwCharacterGenerics charGenerics)
 	{
 		
 		float leftPos = -20f;	// TODO inspector
@@ -1437,18 +1568,18 @@ public class CharacterCreationHelper : EditorWindow {
 		Vector3 topTransformPos = 			new Vector3(0f,topPos,0f);
 		Vector3 bottomTransformPos = 		new Vector3(0f,bottomPos,0f);
 		Vector3 headTransformPos = 			new Vector3(0f,0.3f,0f);
-		Vector3 feetTransformPos = 			new Vector3(0f,-0.3f,0f);
+		//Vector3 feetTransformPos = 			new Vector3(0f,-0.3f,0f);
 		Vector3 bodyTransformPos = 			new Vector3(0f,0f,0f);
-		Vector3 itemCollectorTransformPos = new Vector3(0f,0f,0f);
-		Vector3 powerHitTransformPos = 		new Vector3(0f,0f,0f);
+		//Vector3 itemCollectorTransformPos = new Vector3(0f,0f,0f);
+		//Vector3 powerHitTransformPos = 		new Vector3(0f,0f,0f);
 		Vector3 groundStopperTransformPos = new Vector3(0f,-0.25f,0f);
 		Vector3 kingTransformPos = 			new Vector3(0f,0.6f,0f);
 		
 		Vector2 headBoxSize = new Vector2(0.7f,0.25f);
-		Vector2 feetBoxSize = new Vector2(0.7f,0.25f);
+		//Vector2 feetBoxSize = new Vector2(0.7f,0.25f);
 		Vector2 bodyBoxSize = new Vector2(0.7f,0.8f);
-		Vector2 itemCollectorBoxSize = new Vector2(0.7f,0.8f);
-		Vector2 powerHitBoxSize = new Vector2(0.7f,0.8f);
+		//Vector2 itemCollectorBoxSize = new Vector2(0.7f,0.8f);
+		//Vector2 powerHitBoxSize = new Vector2(0.7f,0.8f);
 		Vector2 groundStopperBoxSize = new Vector2(0.7f,0.5f);
 		
 		Vector2 colliderOffSetCenter = Vector2.zero;
@@ -1466,121 +1597,121 @@ public class CharacterCreationHelper : EditorWindow {
 		smartComponentOffset [2] = colliderOffSetRight;
 		
 		bool headIsTrigger = true;
-		bool feetIsTrigger = true;
+		//bool feetIsTrigger = true;
 		bool bodyIsTrigger = false;
-		bool itemCollectorIsTrigger = true;
-		bool powerHitAreaIsTrigger = true;
+		//bool itemCollectorIsTrigger = true;
+		//bool powerHitAreaIsTrigger = true;
 		bool groundStopperIsTrigger = false;
 
 
 		// root
-		root = new ChildData (characterSO.charName, Tags.tag_player, Layer.playerLayerName, centerTransformPos);		//TODO Achtung PrefabName und Name können isch unterscheieden!!!
-		root.Add(root.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.charIdleSprites[0], charGenerics.color_rootRenderer, charGenerics.rootRendererSortingLayer);
-		root.Add(root.gameObject.AddComponent<Animator>(), true, characterSO.runtimeAnimatorController);		//TODO inspector
-		root.Add(root.gameObject.AddComponent<Rigidbody2D>(), 0f, true); 	//TODO inspector
+		root = new ChildData (characterSO.charName, TagManager.Instance.tag_player, LayerManager.Instance.playerLayerName, centerTransformPos);		//TODO Achtung PrefabName und Name können isch unterscheieden!!!
+		root.Add(root.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.GetSprites(teamId,SmwCharacterAnimation.Idle)[0], charGenerics.color_rootRenderer, charGenerics.rootRendererSortingLayer);
+		root.Add(root.gameObject.AddComponent<Animator>(), true, characterSO.GetRuntimeAnimationController(teamId));		//TODO inspector
+		root.Add(root.gameObject.AddComponent<Rigidbody2D>(), 0f, RigidbodyConstraints2D.FreezeRotation, 3f); 	//TODO inspector
 		root.Add(root.gameObject.AddComponent<AudioSource>(), true);
-		root.Add(root.gameObject.AddComponent<RealOwner>(), true);
+		//root.Add(root.gameObject.AddComponent<RealOwner>(), true);
 		root.Add(root.gameObject.AddComponent<PlatformUserControl>(), true);
-		PlatformCharacter platformCharScript = root.gameObject.AddComponent<PlatformCharacter>();
+		PlatformCharacterScript platformCharScript = root.gameObject.AddComponent<PlatformCharacterScript>();
 		// build > 0.701
 		// add CharSO to CharPrefab
 		platformCharScript.SetSmwCharacterSO(characterSO);
 		root.Add(platformCharScript, true);
-		root.Add(root.gameObject.AddComponent<PlatformJumperV2>(), true);
-		root.Add(root.gameObject.AddComponent<Rage>(), true);
-		root.Add(root.gameObject.AddComponent<Shoot>(), true);
-		root.Add(root.gameObject.AddComponent<Shield>(), true);
+		root.Add(root.gameObject.AddComponent<PlatformJumperScript>(), true);
+		//root.Add(root.gameObject.AddComponent<Rage>(), true);
+		//root.Add(root.gameObject.AddComponent<Shoot>(), true);
+		//root.Add(root.gameObject.AddComponent<Shield>(), true);
 		NetworkedPlayer netPlayerScript = root.gameObject.AddComponent<NetworkedPlayer>();
 		root.Add(netPlayerScript, true);
-		root.Add(root.gameObject.AddComponent<NetworkView>(), true, netPlayerScript);
-		root.Add(root.gameObject.AddComponent<PushSkript>(), false);
-		root.Add(root.gameObject.AddComponent<Bot>(), false);
+//		root.Add(root.gameObject.AddComponent<NetworkView>(), true, netPlayerScript);
+		//root.Add(root.gameObject.AddComponent<PushSkript>(), false);
+		//root.Add(root.gameObject.AddComponent<Bot>(), false);
 
 		
 		// Clone Left
-		ChildData child = new ChildData (Tags.name_cloneLeft, Tags.tag_player, Layer.playerLayerName, leftTransformPos);
-		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.charIdleSprites[0], charGenerics.color_rootCloneRenderer, charGenerics.rootCloneRendererSortingLayer);
+		ChildData child = new ChildData (TagManager.Instance.tag_player_clone, TagManager.Instance.tag_player, LayerManager.Instance.playerLayerName, leftTransformPos);
+		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.GetSprites(teamId, SmwCharacterAnimation.Idle)[0], charGenerics.color_rootCloneRenderer, charGenerics.rootCloneRendererSortingLayer);
 		child.Add(child.gameObject.AddComponent<CloneSpriteScript>(), true);
 		childs.Add (child);
 		
 		// Clone Right
-		child = new ChildData (Tags.name_cloneRight, Tags.tag_player, Layer.playerLayerName, rightTransformPos);
-		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.charIdleSprites[0], charGenerics.color_rootCloneRenderer, charGenerics.rootCloneRendererSortingLayer);
+		child = new ChildData (TagManager.Instance.name_cloneRight, TagManager.Instance.tag_player_clone, LayerManager.Instance.playerLayerName, rightTransformPos);
+		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.GetSprites(teamId, SmwCharacterAnimation.Idle)[0], charGenerics.color_rootCloneRenderer, charGenerics.rootCloneRendererSortingLayer);
 		child.Add(child.gameObject.AddComponent<CloneSpriteScript>(), true);
 		childs.Add (child);
 
 		// Clone Top
-		child = new ChildData (Tags.name_CloneTop, Tags.tag_player, Layer.playerLayerName, topTransformPos);
-		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.charIdleSprites[0], charGenerics.color_rootCloneRenderer, charGenerics.rootCloneRendererSortingLayer);
+		child = new ChildData (TagManager.Instance.name_CloneTop, TagManager.Instance.tag_player_clone, LayerManager.Instance.playerLayerName, topTransformPos);
+		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.GetSprites(teamId, SmwCharacterAnimation.Idle)[0], charGenerics.color_rootCloneRenderer, charGenerics.rootCloneRendererSortingLayer);
 		child.Add(child.gameObject.AddComponent<CloneSpriteScript>(), true);
 		childs.Add (child);
 
 		// Clone Bottom
-		child = new ChildData (Tags.name_CloneBottom, Tags.tag_player, Layer.playerLayerName, bottomTransformPos);
-		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.charIdleSprites[0], charGenerics.color_rootCloneRenderer, charGenerics.rootCloneRendererSortingLayer);
+		child = new ChildData (TagManager.Instance.name_CloneBottom, TagManager.Instance.tag_player_clone, LayerManager.Instance.playerLayerName, bottomTransformPos);
+		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.GetSprites(teamId, SmwCharacterAnimation.Idle)[0], charGenerics.color_rootCloneRenderer, charGenerics.rootCloneRendererSortingLayer);
 		child.Add(child.gameObject.AddComponent<CloneSpriteScript>(), true);
 		childs.Add (child);
 		
 		// Head (cloned)
-		child = new ChildData (Tags.name_head, Tags.tag_head, Layer.headLayerName, headTransformPos);
+		child = new ChildData (TagManager.Instance.name_head, TagManager.Instance.tag_head, LayerManager.Instance.headLayerName, headTransformPos);
 		child.Add(child.gameObject.AddComponent<BoxCollider2D>(), true, headBoxSize, smartComponentOffset, headIsTrigger, 3);
 		childs.Add (child);
 		
-		// Feet (cloned)
-		child = new ChildData (Tags.name_feet, Tags.tag_player, Layer.feetLayerName, feetTransformPos);
-		child.Add(child.gameObject.AddComponent<BoxCollider2D>(), true, feetBoxSize, smartComponentOffset, feetIsTrigger, 3);
-		child.Add(child.gameObject.AddComponent<SendDamageTrigger>(),true);
-		childs.Add (child);
+		//// Feet (cloned)
+		//child = new ChildData (Tags.Instance.name_feet, Tags.Instance.tag_player, Layer.feetLayerName, feetTransformPos);
+		//child.Add(child.gameObject.AddComponent<BoxCollider2D>(), true, feetBoxSize, smartComponentOffset, feetIsTrigger, 3);
+		//child.Add(child.gameObject.AddComponent<SendDamageTrigger>(),true);
+		//childs.Add (child);
 		
 		// Body (cloned)
-		child = new ChildData (Tags.name_body, Tags.tag_body, Layer.bodyLayerName, bodyTransformPos);
+		child = new ChildData (TagManager.Instance.name_body, TagManager.Instance.tag_body, LayerManager.Instance.bodyLayerName, bodyTransformPos);
 		child.Add(child.gameObject.AddComponent<BoxCollider2D>(), true, bodyBoxSize, smartComponentOffset, bodyIsTrigger, 3);
 		childs.Add (child);
 		
-		// ItemCollector (cloned)
-		child = new ChildData (Tags.name_itemCollector, Tags.tag_itemCollector, Layer.itemLayerName, itemCollectorTransformPos);
-		child.Add(child.gameObject.AddComponent<BoxCollider2D>(), true, itemCollectorBoxSize, smartComponentOffset, itemCollectorIsTrigger, 3);
-		child.Add(child.gameObject.AddComponent<ItemCollectorScript>(),true);
-		childs.Add (child);
+		//// ItemCollector (cloned)
+		//child = new ChildData (Tags.Instance.name_itemCollector, Tags.Instance.tag_itemCollector, Layer.itemLayerName, itemCollectorTransformPos);
+		//child.Add(child.gameObject.AddComponent<BoxCollider2D>(), true, itemCollectorBoxSize, smartComponentOffset, itemCollectorIsTrigger, 3);
+		//child.Add(child.gameObject.AddComponent<ItemCollectorScript>(),true);
+		//childs.Add (child);
 		
-		// PowerHitArea (cloned)
-		child = new ChildData (Tags.name_powerUpHitArea, Tags.tag_powerUpHitArea, Layer.powerUpLayerName, powerHitTransformPos);
-		child.Add(child.gameObject.AddComponent<BoxCollider2D>(), true, powerHitBoxSize, smartComponentOffset, powerHitAreaIsTrigger, 3);
-		child.Add(child.gameObject.AddComponent<RageTrigger>(),true);
-		childs.Add (child);
+		//// PowerHitArea (cloned)
+		//child = new ChildData (Tags.Instance.name_powerUpHitArea, Tags.Instance.tag_powerUpHitArea, Layer.powerUpLayerName, powerHitTransformPos);
+		//child.Add(child.gameObject.AddComponent<BoxCollider2D>(), true, powerHitBoxSize, smartComponentOffset, powerHitAreaIsTrigger, 3);
+		//child.Add(child.gameObject.AddComponent<RageTrigger>(),true);
+		//childs.Add (child);
 		
 		// GroundStopper
-		child = new ChildData (Tags.name_groundStopper, Tags.tag_groundStopper, Layer.groundStopperLayerName, groundStopperTransformPos);
+		child = new ChildData (TagManager.Instance.name_groundStopper, TagManager.Instance.tag_groundStopper, LayerManager.Instance.groundStopperLayerName, groundStopperTransformPos);
 		child.Add(child.gameObject.AddComponent<BoxCollider2D>(), true, groundStopperBoxSize, smartComponentOffset, groundStopperIsTrigger, 1);
 		childs.Add (child);
 		
 		// King
-		child = new ChildData (Tags.name_king, Tags.tag_body, Layer.defaultLayerName, kingTransformPos);
+		child = new ChildData (TagManager.Instance.name_king, TagManager.Instance.tag_body, LayerManager.Instance.defaultLayerName, kingTransformPos);
 		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), false, charGenerics.kingSprite, charGenerics.color_kingRenderer, charGenerics.kingRendererSortingLayer);
 		childs.Add (child);
 		
 		// CurrentEstimatedPosOnServer
-		child = new ChildData (Tags.name_CurrentEstimatedPosOnServer, Tags.tag_CurrentEstimatedPosOnServer, Layer.defaultLayerName, centerTransformPos);
-		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.charIdleSprites[0], charGenerics.color_currentEstimatedPosOnServer, charGenerics.currentEstimatedPosOnServerSortingLayer);
+		child = new ChildData (TagManager.Instance.name_CurrentEstimatedPosOnServer, TagManager.Instance.tag_CurrentEstimatedPosOnServer, LayerManager.Instance.defaultLayerName, centerTransformPos);
+		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.GetSprites(teamId, SmwCharacterAnimation.Idle)[0], charGenerics.color_currentEstimatedPosOnServer, charGenerics.currentEstimatedPosOnServerSortingLayer);
 		childs.Add (child);
 		
 		// LastRecvedPos
-		child = new ChildData (Tags.name_lastReceivedPos, Tags.tag_lastReceivedPos, Layer.defaultLayerName, centerTransformPos);
-		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.charIdleSprites[0], charGenerics.color_LastRecvedPos, charGenerics.lastRecvdPosRendererSortingLayer);
+		child = new ChildData (TagManager.Instance.name_lastReceivedPos, TagManager.Instance.tag_lastReceivedPos, LayerManager.Instance.defaultLayerName, centerTransformPos);
+		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.GetSprites(teamId, SmwCharacterAnimation.Idle)[0], charGenerics.color_LastRecvedPos, charGenerics.lastRecvdPosRendererSortingLayer);
 		childs.Add (child);
 		
 		// PredictedPosSimulatedWithLastInput
-		child = new ChildData (Tags.name_PredictedPosSimulatedWithLastInput, Tags.tag_PredictedPosSimulatedWithLastInput, Layer.defaultLayerName, centerTransformPos);
-		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.charIdleSprites[0], charGenerics.color_PredictedPosSimulatedWithLastInput, charGenerics.preSimPosRendererSortingLayer);
+		child = new ChildData (TagManager.Instance.name_PredictedPosSimulatedWithLastInput, TagManager.Instance.tag_PredictedPosSimulatedWithLastInput, LayerManager.Instance.defaultLayerName, centerTransformPos);
+		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.GetSprites(teamId, SmwCharacterAnimation.Idle)[0], charGenerics.color_PredictedPosSimulatedWithLastInput, charGenerics.preSimPosRendererSortingLayer);
 		childs.Add (child);
 		
 		// PredictedPosCalculatedWithLastInput
-		child = new ChildData (Tags.name_PredictedPosCalculatedWithLastInput, Tags.tag_PredictedPosCalculatedWithLastInput, Layer.defaultLayerName, centerTransformPos);
-		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.charIdleSprites[0], charGenerics.color_PredictedPosCalculatedWithLastInput, charGenerics.preCalclastRecvdPosRendererSortingLayer);
+		child = new ChildData (TagManager.Instance.name_PredictedPosCalculatedWithLastInput, TagManager.Instance.tag_PredictedPosCalculatedWithLastInput, LayerManager.Instance.defaultLayerName, centerTransformPos);
+		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, characterSO.GetSprites(teamId, SmwCharacterAnimation.Idle)[0], charGenerics.color_PredictedPosCalculatedWithLastInput, charGenerics.preCalclastRecvdPosRendererSortingLayer);
 		childs.Add (child);
 		
 		// IceWalled
-		child = new ChildData (Tags.name_iceWalled, Tags.tag_iceWalled, Layer.defaultLayerName, centerTransformPos);
+		child = new ChildData (TagManager.Instance.name_iceWalled, TagManager.Instance.tag_iceWalled, LayerManager.Instance.defaultLayerName, centerTransformPos);
 		child.Add(child.gameObject.AddComponent<SpriteRenderer>(), true, null, charGenerics.color_iceWallRenderer, charGenerics.iceWalledRendererSortingLayer);
 		child.Add(child.gameObject.AddComponent<Animator>(), true, charGenerics.iceWandAnimatorController);
 		childs.Add (child);
